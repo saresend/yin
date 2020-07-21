@@ -35,7 +35,7 @@ Yin provides a function for estimating the fundamental frequency of a signal, ba
 At the time of writing I have not taken too much time to optimize this implementation. That said it is still quite snappy, especially if you can provide a reasonably small frequency range to search over:
 
 ```
-44100 sample rate, with frequency of 100 hz over 160 hz search range: [ 2.4157 ms 2.4244 ms 2.4330 ms ]
+44100hz sample rate, 100hz frequency, 160hz search range: [ 2.4157 ms 2.4244 ms 2.4330 ms ]
 ```
 
 Benchmarks are done using criterion, and can be run by cloning the repository and using `cargo bench`
