@@ -4,7 +4,7 @@ use yin::Yin;
 pub fn norm_sine_benchmark(c: &mut Criterion) {
     let sample = {
         use dasp::{signal, Signal};
-        let mut signal = signal::rate(44100.0).const_hz(44100.0).sine();
+        let mut signal = signal::rate(44100.0).const_hz(100.0).sine();
         let sample: Vec<f64> = (0..44100).map(|_| signal.next()).collect();
         sample
     };
