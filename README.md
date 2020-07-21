@@ -36,7 +36,7 @@ yin = "0.1.0"
 
 ### Benchmarks
 
-At the time of writing I have not taken too much time to optimize this implementation. That said it is still quite snappy, especially if you can provide a reasonably small frequency range to search over:
+At the time of writing I have not taken too much time to optimize this implementation, and will be looking at improving the speed of this as needed. Current benchmark timings listed below:
 
 ```
 44100hz sample rate, 100hz frequency, 160hz search range: [ 2.4157 ms 2.4244 ms 2.4330 ms ]
