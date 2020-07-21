@@ -3,6 +3,12 @@ name = "yin"
 version = "0.1.0"
 authors = ["saresend <saresend@usc.edu>"]
 edition = "2018"
+license = "MIT"
+description = "A library for fundamental frequency estimation of periodic signals"
+homepage = "https://github.com/saresend/yin"
+repository = "https://github.com/saresend/yin"
+readme = "README.md"
+keywords = ["audio", "signal", "processing"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
