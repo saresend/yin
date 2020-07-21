@@ -53,12 +53,27 @@ fn compute_sample_frequency(audio_sample: Vec<f64>, tau_max: usize) -> f64 {
 #[cfg(test)]
 mod tests {
     use dasp::{signal, Signal};
-    fn produce_sample(sample_rate: usize, frequency: f64) -> Vec<f64> {}
+    fn produce_sample(sample_rate: usize, frequency: f64, noise_ratio: f64) -> Vec<f64> {
+        use rand::prelude::*;
+        let mut rng = thread_rng();
+        let mut signal = signal::rate(sample_rate as f64).const_hz(frequency).sine();
+        let sample: Vec<f64> = (0..sample_rate)
+            .map(|_| signal.next() + noise_ratio * rng.gen::<f64>())
+            .collect();
+        sample
+    }
     use super::*;
     #[test]
     fn sanity_basic_sine() {
-        let sample = produce_sample(12, 4.0);
+        let sample = produce_sample(12, 4.0, 0.0);
         let computed_frequency = compute_sample_frequency(sample, 6);
         assert_eq!(computed_frequency, 4.0);
+    }
+
+    #[test]
+    fn sanity_full_sine() {
+        let sample = produce_sample(44100, 441.0, 0.0);
+        let computed_frequency = compute_sample_frequency(sample, 4000);
+        assert_eq!(computed_frequency, 441.0);
     }
 }
