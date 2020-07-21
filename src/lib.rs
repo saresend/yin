@@ -124,4 +124,21 @@ mod tests {
         let computed_frequency = yin.estimate_freq(&sample);
         assert_eq!(computed_frequency, 441.0);
     }
+
+    #[test]
+    fn readme_doctest() {
+        let estimator = Yin::init(0.1, 10.0, 30.0, 80);
+        let mut example = vec![];
+        let mut prev_value = -1.0;
+        for i in 0..80 {
+            if i % 2 != 0 {
+                example.push(0.0);
+            } else {
+                prev_value *= -1.0;
+                example.push(prev_value);
+            }
+        }
+        let freq = estimator.estimate_freq(&example);
+        assert_eq!(freq, 20.0);
+    }
 }
