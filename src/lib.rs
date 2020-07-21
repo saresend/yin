@@ -1,3 +1,34 @@
+pub struct Yin {
+    threshold: f64,
+    tau_max: usize,
+    tau_min: usize,
+    sample_rate: usize,
+}
+
+impl Yin {
+    pub fn init(threshold: f64, freq_min: f64, freq_max: f64, sample_rate: usize) -> Yin {
+        let tau_max = sample_rate / freq_min as usize;
+        let tau_min = sample_rate / freq_max as usize;
+        Yin {
+            threshold,
+            tau_max,
+            tau_min,
+            sample_rate,
+        }
+    }
+
+    pub fn estimate_freq(self, audio_sample: &[f64]) -> f64 {
+        let sample_frequency = compute_sample_frequency(
+            audio_sample,
+            self.tau_min,
+            self.tau_max,
+            self.sample_rate,
+            self.threshold,
+        );
+        sample_frequency
+    }
+}
+
 fn diff_function(audio_sample: &[f64], tau_max: usize) -> Vec<f64> {
     let mut diff_function = vec![0.0; tau_max];
     for tau in 1..tau_max {
@@ -23,7 +54,7 @@ fn cmndf(raw_diff: &[f64]) -> Vec<f64> {
     cmndf_diff
 }
 
-fn compute_diff_min(diff_fn: &[f64], max_tau: usize, harm_threshold: f64) -> usize {
+fn compute_diff_min(diff_fn: &[f64], min_tau: usize, max_tau: usize, harm_threshold: f64) -> usize {
     let mut tau = 1;
     while tau < max_tau {
         if diff_fn[tau] < harm_threshold {
@@ -43,11 +74,17 @@ fn convert_to_frequency(sample_period: usize, sample_rate: usize) -> f64 {
 }
 
 // should return a tau that gives the # of elements of offset in a given sample
-pub fn compute_sample_frequency(audio_sample: &[f64], tau_max: usize) -> f64 {
+pub fn compute_sample_frequency(
+    audio_sample: &[f64],
+    tau_min: usize,
+    tau_max: usize,
+    sample_rate: usize,
+    threshold: f64,
+) -> f64 {
     let diff_fn = diff_function(&audio_sample, tau_max);
     let cmndf = cmndf(&diff_fn);
-    let sample_period = compute_diff_min(&cmndf, tau_max, 0.1);
-    convert_to_frequency(sample_period, audio_sample.len())
+    let sample_period = compute_diff_min(&cmndf, tau_min, tau_max, threshold);
+    convert_to_frequency(sample_period, sample_rate)
 }
 
 #[cfg(test)]
@@ -66,14 +103,16 @@ mod tests {
     #[test]
     fn sanity_basic_sine() {
         let sample = produce_sample(12, 4.0, 0.0);
-        let computed_frequency = compute_sample_frequency(&sample, 6);
+        let yin = Yin::init(0.1, 2.0, 5.0, 12);
+        let computed_frequency = yin.estimate_freq(&sample);
         assert_eq!(computed_frequency, 4.0);
     }
 
     #[test]
     fn sanity_non_multiple() {
         let sample = produce_sample(44100, 4000.0, 0.0);
-        let computed_frequency = compute_sample_frequency(&sample, 1000);
+        let yin = Yin::init(0.1, 3000.0, 5000.0, 44100);
+        let computed_frequency = yin.estimate_freq(&sample);
         let difference = computed_frequency - 4000.0;
         assert!(difference.abs() < 50.0);
     }
@@ -81,7 +120,8 @@ mod tests {
     #[test]
     fn sanity_full_sine() {
         let sample = produce_sample(44100, 441.0, 0.0);
-        let computed_frequency = compute_sample_frequency(&sample, 4000);
+        let yin = Yin::init(0.1, 300.0, 500.0, 44100);
+        let computed_frequency = yin.estimate_freq(&sample);
         assert_eq!(computed_frequency, 441.0);
     }
 }
