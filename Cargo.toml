@@ -9,4 +9,11 @@ edition = "2018"
 [dependencies]
 
 [dev-dependencies]
-dasp = "0.11.0"
+dasp = { version="0.11.0", features = ["signal"] }
+rand = "0.7.3"
+criterion = "0.3.3"
+
+
+[[bench]]
+name = "yin_benchmark"
+harness = false

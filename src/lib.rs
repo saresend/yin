@@ -43,7 +43,7 @@ fn convert_to_frequency(sample_period: usize, sample_rate: usize) -> f64 {
 }
 
 // should return a tau that gives the # of elements of offset in a given sample
-fn compute_sample_frequency(audio_sample: Vec<f64>, tau_max: usize) -> f64 {
+pub fn compute_sample_frequency(audio_sample: &[f64], tau_max: usize) -> f64 {
     let diff_fn = diff_function(&audio_sample, tau_max);
     let cmndf = cmndf(&diff_fn);
     let sample_period = compute_diff_min(&cmndf, tau_max, 0.15);
@@ -66,14 +66,14 @@ mod tests {
     #[test]
     fn sanity_basic_sine() {
         let sample = produce_sample(12, 4.0, 0.0);
-        let computed_frequency = compute_sample_frequency(sample, 6);
+        let computed_frequency = compute_sample_frequency(&sample, 6);
         assert_eq!(computed_frequency, 4.0);
     }
 
     #[test]
     fn sanity_full_sine() {
         let sample = produce_sample(44100, 441.0, 0.0);
-        let computed_frequency = compute_sample_frequency(sample, 4000);
+        let computed_frequency = compute_sample_frequency(&sample, 4000);
         assert_eq!(computed_frequency, 441.0);
     }
 }
