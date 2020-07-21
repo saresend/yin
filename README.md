@@ -8,7 +8,11 @@ Yin provides a function for estimating the fundamental frequency of a signal, ba
 
 # Installation
 
-## TODO: Put on crates.io
+Add the following to your `Cargo.toml`
+
+```
+yin = "0.1.0"
+```
 
 # Usage
 
