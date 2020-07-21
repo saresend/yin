@@ -17,7 +17,7 @@ impl Yin {
         }
     }
 
-    pub fn estimate_freq(self, audio_sample: &[f64]) -> f64 {
+    pub fn estimate_freq(&self, audio_sample: &[f64]) -> f64 {
         let sample_frequency = compute_sample_frequency(
             audio_sample,
             self.tau_min,

@@ -1,5 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use yin::compute_sample_frequency;
+use yin::Yin;
 
 pub fn norm_sine_benchmark(c: &mut Criterion) {
     let sample = {
@@ -8,8 +8,9 @@ pub fn norm_sine_benchmark(c: &mut Criterion) {
         let sample: Vec<f64> = (0..44100).map(|_| signal.next()).collect();
         sample
     };
+    let yin = Yin::init(0.1, 40.0, 200.0, 1000);
     c.bench_function("1000 sr, 100.0 freq", |b| {
-        b.iter(|| compute_sample_frequency(&sample, 100))
+        b.iter(|| yin.estimate_freq(&sample))
     });
 }
 
