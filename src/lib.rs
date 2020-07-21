@@ -55,7 +55,7 @@ fn cmndf(raw_diff: &[f64]) -> Vec<f64> {
 }
 
 fn compute_diff_min(diff_fn: &[f64], min_tau: usize, max_tau: usize, harm_threshold: f64) -> usize {
-    let mut tau = 1;
+    let mut tau = min_tau;
     while tau < max_tau {
         if diff_fn[tau] < harm_threshold {
             while tau + 1 < max_tau && diff_fn[tau + 1] < diff_fn[tau] {
