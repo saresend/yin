@@ -1,3 +1,4 @@
+#[derive(Clone, Debug)]
 pub struct Yin {
     threshold: f64,
     tau_max: usize,
