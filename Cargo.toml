@@ -18,6 +18,7 @@ keywords = ["audio", "signal", "processing"]
 dasp = { version="0.11.0", features = ["signal"] }
 rand = "0.7.3"
 criterion = "0.3.3"
+cpal = "0.12.1"
 
 
 [[bench]]
