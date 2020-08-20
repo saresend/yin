@@ -42,18 +42,15 @@ fn diff_function(audio_sample: &[f64], tau_max: usize) -> Vec<f64> {
 }
 
 fn cmndf(raw_diff: &[f64]) -> Vec<f64> {
-    let mut cmndf_diff: Vec<f64> = raw_diff[1..]
-        .iter()
-        .enumerate()
-        .scan(0.0, |state, x| {
-            *state = *state + x.1;
-            let result = *x.1 * (x.0 + 1) as f64 / *state;
-            Some(result)
-        })
-        .collect();
-    cmndf_diff.insert(0, 1.0);
+    let mut running_sum = 0.0;
+    let mut cmndf_diff = vec![0.0];
+    for index in 1..raw_diff.len() {
+        running_sum += raw_diff[index];
+        cmndf_diff.push(raw_diff[index] * index as f64 / running_sum);
+    }
+
     cmndf_diff
-}
+    }
 
 fn compute_diff_min(diff_fn: &[f64], min_tau: usize, max_tau: usize, harm_threshold: f64) -> usize {
     let mut tau = min_tau;
@@ -69,7 +66,29 @@ fn compute_diff_min(diff_fn: &[f64], min_tau: usize, max_tau: usize, harm_thresh
     0
 }
 
-fn convert_to_frequency(sample_period: usize, sample_rate: usize) -> f64 {
+fn convert_to_frequency(diff_fn: &[f64], max_tau: usize, sample_period: usize, sample_rate: usize) -> f64 {
+    let res;
+    let x0 = if sample_period  == 0 { sample_period } else { sample_period - 1 };
+    let x2 = if sample_period + 1 < max_tau { sample_period + 1 } else { sample_period };
+    if x0 == sample_period {
+        if diff_fn[x2] < diff_fn[sample_period] { 
+            res = x2 as f64
+        } else {
+            res = sample_period as f64
+        }
+    } else if x2 == sample_period {
+        if diff_fn[x0] < diff_fn[sample_period] {
+            res = x0 as f64
+        } else {
+            res = sample_period as f64
+        }
+    } else {
+        let s0 = diff_fn[x0];
+        let s1 = diff_fn[sample_period];
+        let s2 = diff_fn[x2];
+
+        res = sample_period as f64 + (s2 - s0) / (2.0*(2.0*s1-s2-s0))
+    }
     let value: f64 = sample_period as f64 / sample_rate as f64;
     1.0 / value
 }
@@ -86,7 +105,7 @@ pub fn compute_sample_frequency(
     let cmndf = cmndf(&diff_fn);
     let sample_period = compute_diff_min(&cmndf, tau_min, tau_max, threshold);
     println!("{}", sample_period);
-    convert_to_frequency(sample_period, sample_rate)
+    convert_to_frequency(&diff_fn, tau_max, sample_period, sample_rate)
 }
 
 #[cfg(test)]
