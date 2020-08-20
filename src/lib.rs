@@ -62,7 +62,7 @@ fn compute_diff_min(diff_fn: &[f64], min_tau: usize, max_tau: usize, harm_thresh
             while tau + 1 < max_tau && diff_fn[tau + 1] < diff_fn[tau] {
                 tau += 1;
             }
-            return tau;
+            return tau / 2;
         }
         tau += 1;
     }
@@ -85,6 +85,7 @@ pub fn compute_sample_frequency(
     let diff_fn = diff_function(&audio_sample, tau_max);
     let cmndf = cmndf(&diff_fn);
     let sample_period = compute_diff_min(&cmndf, tau_min, tau_max, threshold);
+    println!("{}", sample_period);
     convert_to_frequency(sample_period, sample_rate)
 }
 
