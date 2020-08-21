@@ -10,12 +10,14 @@ impl Yin {
     pub fn init(threshold: f64, freq_min: f64, freq_max: f64, sample_rate: usize) -> Yin {
         let tau_max = sample_rate / freq_min as usize;
         let tau_min = sample_rate / freq_max as usize;
-        Yin {
+        let res = Yin {
             threshold,
             tau_max,
             tau_min,
             sample_rate,
-        }
+        };
+        println!("{:?}", res);
+        res
     }
 
     pub fn estimate_freq(&self, audio_sample: &[f64]) -> f64 {
@@ -32,8 +34,10 @@ impl Yin {
 
 fn diff_function(audio_sample: &[f64], tau_max: usize) -> Vec<f64> {
     let mut diff_function = vec![0.0; tau_max];
+    let tau_max = std::cmp::min(audio_sample.len(), tau_max);
     for tau in 1..tau_max {
         for j in 0..(audio_sample.len() - tau_max) {
+            println!("Subtracting: {}, {}", audio_sample[j], audio_sample[j + tau]);
             let tmp = audio_sample[j] - audio_sample[j + tau];
             diff_function[tau] += tmp * tmp;
         }
@@ -59,7 +63,7 @@ fn compute_diff_min(diff_fn: &[f64], min_tau: usize, max_tau: usize, harm_thresh
             while tau + 1 < max_tau && diff_fn[tau + 1] < diff_fn[tau] {
                 tau += 1;
             }
-            return tau / 2;
+            return tau;
         }
         tau += 1;
     }
@@ -86,11 +90,10 @@ fn convert_to_frequency(diff_fn: &[f64], max_tau: usize, sample_period: usize, s
         let s0 = diff_fn[x0];
         let s1 = diff_fn[sample_period];
         let s2 = diff_fn[x2];
-
-        res = sample_period as f64 + (s2 - s0) / (2.0*(2.0*s1-s2-s0))
+        res = sample_period as f64 + (s2 - s0) / (2.0*(2.0*s1-s2-s0));
     }
-    let value: f64 = sample_period as f64 / sample_rate as f64;
-    1.0 / value
+    let value: f64 = sample_rate as f64 / sample_period as f64;
+    value
 }
 
 // should return a tau that gives the # of elements of offset in a given sample

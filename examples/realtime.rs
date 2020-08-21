@@ -8,6 +8,7 @@ fn main() {
         .default_input_device()
         .expect("failed to find input device");
     let config = device.default_input_config().unwrap();
+    println!("Sample Rate {:?}", config.sample_rate());
     match config.sample_format() {
         cpal::SampleFormat::F32 => run::<f32>(&device, &config.into()),
         cpal::SampleFormat::I16 => run::<i16>(&device, &config.into()),
@@ -16,7 +17,7 @@ fn main() {
 }
 
 fn run<T: Sample>(device: &Device, config: &StreamConfig) {
-    let yin = yin::Yin::init(0.1, 1000.0, 10000.0, 44100);
+    let yin = yin::Yin::init(0.01, 1.0, 10000.0, 44100);
     let err_fn = |err| println!("{}", err);
     let stream = device
         .build_input_stream(
