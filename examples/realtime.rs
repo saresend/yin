@@ -8,7 +8,6 @@ fn main() {
         .default_input_device()
         .expect("failed to find input device");
     let config = device.default_input_config().unwrap();
-    println!("Sample Rate {:?}", config.sample_rate());
     match config.sample_format() {
         cpal::SampleFormat::F32 => run::<f32>(&device, &config.into()),
         cpal::SampleFormat::I16 => run::<i16>(&device, &config.into()),
@@ -17,7 +16,7 @@ fn main() {
 }
 
 fn run<T: Sample>(device: &Device, config: &StreamConfig) {
-    let yin = yin::Yin::init(0.01, 1.0, 10000.0, 44100);
+    let yin = yin::Yin::init(0.01, 10.0, 100.0, 44100);
     let err_fn = |err| println!("{}", err);
     let stream = device
         .build_input_stream(
@@ -33,6 +32,6 @@ fn run<T: Sample>(device: &Device, config: &StreamConfig) {
 
 fn write_input_data<T: Sample>(input: &[T], yin: &yin::Yin) {
     let f64_vals: Vec<f64> = input.iter().map(|x| x.to_f32() as f64).collect();
-    let estimate = yin.estimate_freq(&f64_vals).unwrap();
+    let estimate = yin.estimate_freq(&f64_vals).unwrap_or(-1.0);
     println!("Estimated Frequency: {}", estimate);
 }
