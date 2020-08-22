@@ -1,3 +1,7 @@
+mod errors;
+
+use errors::UnknownValueError;
+
 #[derive(Clone, Debug)]
 pub struct Yin {
     threshold: f64,
@@ -18,7 +22,7 @@ impl Yin {
         }
     }
 
-    pub fn estimate_freq(&self, audio_sample: &[f64]) -> f64 {
+    pub fn estimate_freq(&self, audio_sample: &[f64]) -> Result<f64, Box<dyn std::error::Error>> {
         let sample_frequency = compute_sample_frequency(
             audio_sample,
             self.tau_min,
@@ -26,7 +30,12 @@ impl Yin {
             self.sample_rate,
             self.threshold,
         );
-        sample_frequency
+
+        if sample_frequency.is_infinite() {
+            Err(Box::new(UnknownValueError {}))
+        } else {
+            Ok(sample_frequency)
+        }
     }
 }
 
@@ -105,7 +114,7 @@ mod tests {
     fn sanity_basic_sine() {
         let sample = produce_sample(12, 4.0, 0.0);
         let yin = Yin::init(0.1, 2.0, 5.0, 12);
-        let computed_frequency = yin.estimate_freq(&sample);
+        let computed_frequency = yin.estimate_freq(&sample).unwrap();
         assert_eq!(computed_frequency, 4.0);
     }
 
@@ -113,7 +122,7 @@ mod tests {
     fn sanity_non_multiple() {
         let sample = produce_sample(44100, 4000.0, 0.0);
         let yin = Yin::init(0.1, 3000.0, 5000.0, 44100);
-        let computed_frequency = yin.estimate_freq(&sample);
+        let computed_frequency = yin.estimate_freq(&sample).unwrap();
         let difference = computed_frequency - 4000.0;
         assert!(difference.abs() < 50.0);
     }
@@ -122,7 +131,7 @@ mod tests {
     fn sanity_full_sine() {
         let sample = produce_sample(44100, 441.0, 0.0);
         let yin = Yin::init(0.1, 300.0, 500.0, 44100);
-        let computed_frequency = yin.estimate_freq(&sample);
+        let computed_frequency = yin.estimate_freq(&sample).unwrap();
         assert_eq!(computed_frequency, 441.0);
     }
 
@@ -139,7 +148,7 @@ mod tests {
                 example.push(prev_value);
             }
         }
-        let freq = estimator.estimate_freq(&example);
+        let freq = estimator.estimate_freq(&example).unwrap();
         assert_eq!(freq, 20.0);
     }
 }

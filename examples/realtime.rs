@@ -32,6 +32,6 @@ fn run<T: Sample>(device: &Device, config: &StreamConfig) {
 
 fn write_input_data<T: Sample>(input: &[T], yin: &yin::Yin) {
     let f64_vals: Vec<f64> = input.iter().map(|x| x.to_f32() as f64).collect();
-    let estimate = yin.estimate_freq(&f64_vals);
+    let estimate = yin.estimate_freq(&f64_vals).unwrap();
     println!("Estimated Frequency: {}", estimate);
 }
