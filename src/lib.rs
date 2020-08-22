@@ -46,7 +46,6 @@ fn diff_function(audio_sample: &[f64], tau_max: usize) -> Vec<f64> {
     let tau_max = std::cmp::min(audio_sample.len(), tau_max);
     for tau in 1..tau_max {
         for j in 0..(audio_sample.len() - tau_max) {
-            println!("Subtracting: {}, {}", audio_sample[j], audio_sample[j + tau]);
             let tmp = audio_sample[j] - audio_sample[j + tau];
             diff_function[tau] += tmp * tmp;
         }
@@ -63,7 +62,7 @@ fn cmndf(raw_diff: &[f64]) -> Vec<f64> {
     }
 
     cmndf_diff
-    }
+}
 
 fn compute_diff_min(diff_fn: &[f64], min_tau: usize, max_tau: usize, harm_threshold: f64) -> usize {
     let mut tau = min_tau;
@@ -79,28 +78,12 @@ fn compute_diff_min(diff_fn: &[f64], min_tau: usize, max_tau: usize, harm_thresh
     0
 }
 
-fn convert_to_frequency(diff_fn: &[f64], max_tau: usize, sample_period: usize, sample_rate: usize) -> f64 {
-    let res;
-    let x0 = if sample_period  == 0 { sample_period } else { sample_period - 1 };
-    let x2 = if sample_period + 1 < max_tau { sample_period + 1 } else { sample_period };
-    if x0 == sample_period {
-        if diff_fn[x2] < diff_fn[sample_period] { 
-            res = x2 as f64
-        } else {
-            res = sample_period as f64
-        }
-    } else if x2 == sample_period {
-        if diff_fn[x0] < diff_fn[sample_period] {
-            res = x0 as f64
-        } else {
-            res = sample_period as f64
-        }
-    } else {
-        let s0 = diff_fn[x0];
-        let s1 = diff_fn[sample_period];
-        let s2 = diff_fn[x2];
-        res = sample_period as f64 + (s2 - s0) / (2.0*(2.0*s1-s2-s0));
-    }
+fn convert_to_frequency(
+    diff_fn: &[f64],
+    max_tau: usize,
+    sample_period: usize,
+    sample_rate: usize,
+) -> f64 {
     let value: f64 = sample_rate as f64 / sample_period as f64;
     value
 }
@@ -139,6 +122,14 @@ mod tests {
         let yin = Yin::init(0.1, 2.0, 5.0, 12);
         let computed_frequency = yin.estimate_freq(&sample).unwrap();
         assert_eq!(computed_frequency, 4.0);
+    }
+
+    #[test]
+    fn sanity_low_hz_full_sample() {
+        let sample = produce_sample(44100, 20.0, 0.0);
+        let yin = Yin::init(0.1, 10.0, 100.0, 44100);
+        let computed_frequency = yin.estimate_freq(&sample).unwrap();
+        assert_eq!(computed_frequency, 20.0);
     }
 
     #[test]
