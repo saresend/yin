@@ -20,7 +20,6 @@ impl Yin {
             tau_min,
             sample_rate,
         };
-        println!("{:?}", res);
         res
     }
 
@@ -66,7 +65,6 @@ fn cmndf(raw_diff: &[f64]) -> Vec<f64> {
 
 fn compute_diff_min(diff_fn: &[f64], min_tau: usize, max_tau: usize, harm_threshold: f64) -> usize {
     let mut tau = min_tau;
-    println!("Max_tau {}", max_tau);
     while tau < max_tau {
         if diff_fn[tau] < harm_threshold {
             while tau + 1 < max_tau && diff_fn[tau + 1] < diff_fn[tau] {
@@ -100,7 +98,6 @@ pub fn compute_sample_frequency(
     let diff_fn = diff_function(&audio_sample, tau_max);
     let cmndf = cmndf(&diff_fn);
     let sample_period = compute_diff_min(&cmndf, tau_min, tau_max, threshold);
-    println!("{}", sample_period);
     convert_to_frequency(&diff_fn, tau_max, sample_period, sample_rate)
 }
 
